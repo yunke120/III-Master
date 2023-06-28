@@ -14,6 +14,7 @@
 using namespace cv;
 using namespace std;
 
+
 class OpencvThread : public QThread
 {
     Q_OBJECT

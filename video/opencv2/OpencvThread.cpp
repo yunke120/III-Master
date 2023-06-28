@@ -1,26 +1,28 @@
 ﻿
-#include "OpencvThread.h"
-
+#include "opencvthread.h"
+#include <QDebug>
 QQueue<cv::Mat> videoFrameQueue;
 QMutex videoMutex;
 
-OpencvThread::OpencvThread(QObject *parent)
+
+OpencvThread::OpencvThread(QObject *parent) : QThread (parent)
 {
-    Q_UNUSED(parent)
     setObjectName("OpencvThread");
     stopped = false;
 }
 
 void OpencvThread::run()
 {
+    // https://blog.csdn.net/weixin_43272781/article/details/103787735
     if(addrType)
         pCap = new VideoCapture(Url.toStdString());
     else
-        pCap = new VideoCapture(Addr);
+        pCap = new VideoCapture(Addr,CAP_DSHOW);
 
     if(pCap == nullptr || !pCap->isOpened())
     {
         emit sigReset();
+        qDebug() << "opencv falied";
         return;
     }
 

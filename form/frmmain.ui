@@ -437,7 +437,24 @@
        </item>
        <item>
         <widget class="QStackedWidget" name="stackedWidget2">
-         <widget class="QWidget" name="page_a"/>
+         <widget class="QWidget" name="page_a">
+          <layout class="QGridLayout" name="gridLayout">
+           <item row="0" column="0">
+            <layout class="QVBoxLayout" name="verticalLayout_6">
+             <item>
+              <widget class="VideoWidget" name="widgetVideo" native="true"/>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btnOpenVideo">
+               <property name="text">
+                <string>打开视频</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
          <widget class="QWidget" name="page_b"/>
          <widget class="QWidget" name="page_c"/>
         </widget>
@@ -629,6 +646,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>VideoWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">video/widget/videowidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../other/main.qrc"/>
  </resources>

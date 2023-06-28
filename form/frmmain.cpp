@@ -253,3 +253,20 @@ void frmMain::on_btnMenu_Close_clicked()
     close();
 }
 
+
+void frmMain::on_btnOpenVideo_clicked()
+{
+    if(ui->btnOpenVideo->text() == "打开视频")
+    {
+        ui->btnOpenVideo->setText("关闭视频");
+//        ui->widgetVideo->setAddr("rtsp://127.0.0.1:8554/main"); // 网络流
+//        ui->widgetVideo->setAddr("./test.mp4"); // 本地视频文件
+        ui->widgetVideo->setAddr(0); // 本地摄像头
+        ui->widgetVideo->open();
+    }
+    else
+    {
+        ui->btnOpenVideo->setText("打开视频");
+        ui->widgetVideo->close();
+    }
+}

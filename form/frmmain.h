@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include "video/widget/videowidget.h"
+
 class QAbstractButton;
 
 namespace Ui {
@@ -57,6 +59,7 @@ private slots:
     void on_btnMenu_Min_clicked();
     void on_btnMenu_Max_clicked();
     void on_btnMenu_Close_clicked();
+    void on_btnOpenVideo_clicked();
 };
 
 #endif // FRMMAIN_H

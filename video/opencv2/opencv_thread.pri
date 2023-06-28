@@ -1,8 +1,8 @@
 
 
 
-HEADERS += $$PWD/OpencvThread.h
-SOURCES += $$PWD/OpencvThread.cpp
+HEADERS += $$PWD/opencvthread.h
+SOURCES += $$PWD/opencvthread.cpp
 
 INCLUDEPATH += $$PWD/include
 INCLUDEPATH += $$PWD/include/opencv2
