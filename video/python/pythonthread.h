@@ -9,11 +9,16 @@
 #include <QDebug>
 #include <QTimer>
 
+#include <string>
+#include <iostream>
+#include <vector>
+
 extern "C"
 {
 #include <python/Python.h>
 #include <numpy/ndarrayobject.h>
 }
+
 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core.hpp>
@@ -35,7 +40,16 @@ public:
     ~PythonThread();
 
 private:
-    bool init(const char *module_name, const char *class_name);
+    bool initializePythonInterpreter(const std::wstring& pythonHome);
+    bool importPythonModule(const std::string& moduleName, const std::string& className,
+                            PyObject*& pModule, PyObject*& pClass);
+    bool instantiatePythonClass(PyObject* pClass, PyObject*& pDetect);
+    bool importNumPy();
+    bool init(const std::wstring& pythonHome, const std::string& moduleName,
+                            const std::string& className);
+    bool PyObject_ToStringList(PyObject* obj, std::vector<std::string>& outList);
+    bool PyObject_ToStringList(PyObject* obj, QStringList& outList);
+    const char* PyUnicode_AsUTF8(PyObject* obj);
     void deinit();
     bool loadAlgorithmModel(const char *func_name);
     bool predict(const char *fun, Mat srcImg, ROI_FRAME &roiFrame);

@@ -35,3 +35,4 @@
 LOGS/
 *.mp4
 bin/yolov5/
+video/python/yolov5/

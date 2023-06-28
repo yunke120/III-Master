@@ -20,23 +20,85 @@ PythonThread::~PythonThread()
     close();
 }
 
-bool PythonThread::loadAlgorithmModel(const char *func_name)
-{
-    PyObject *ret = PyObject_CallMethod(pDetect, func_name, ""); // 加载 YoloV 模型，最耗时的过程
-    if(!ret)
-    {
-        errorStr = ERROR("Failed to load algorithm model");
+bool PythonThread::PyObject_ToStringList(PyObject* obj, std::vector<std::string>& outList) {
+    if (!PyList_Check(obj)) {
         return false;
     }
+
+    Py_ssize_t size = PyList_Size(obj);
+    outList.reserve(size);
+
+    for (Py_ssize_t i = 0; i < size; ++i) {
+        PyObject* item = PyList_GetItem(obj, i);
+        if (!item || !PyUnicode_Check(item)) {
+            return false;
+        }
+        PyObject* utf8StrObj = PyUnicode_AsUTF8String(item);
+        if (!utf8StrObj) {
+            return false;
+        }
+        const char* utf8Str = PyBytes_AsString(utf8StrObj);
+        if (!utf8Str) {
+            Py_DECREF(utf8StrObj);
+            return false;
+        }
+        outList.emplace_back(utf8Str);
+        Py_DECREF(utf8StrObj);
+    }
+
     return true;
+}
+
+// 辅助函数: 将 PyObject 转换为 QString 列表
+bool PythonThread::PyObject_ToStringList(PyObject* obj, QStringList& outList) {
+    if (!PyList_Check(obj)) {
+        return false;
+    }
+
+    Py_ssize_t size = PyList_Size(obj);
+    outList.reserve(size);
+
+    for (Py_ssize_t i = 0; i < size; ++i) {
+        PyObject* item = PyList_GetItem(obj, i);
+        if (!item || !PyUnicode_Check(item)) {
+            return false;
+        }
+        PyObject* utf8StrObj = PyUnicode_AsUTF8String(item);
+        if (!utf8StrObj) {
+            return false;
+        }
+        const char* utf8Str = PyBytes_AsString(utf8StrObj);
+        if (!utf8Str) {
+            Py_DECREF(utf8StrObj);
+            return false;
+        }
+        outList.append(QString::fromUtf8(utf8Str));
+        Py_DECREF(utf8StrObj);
+    }
+
+    return true;
+}
+
+// 辅助函数: 将 PyObject 转换为 UTF-8 编码的字符串
+const char* PythonThread::PyUnicode_AsUTF8(PyObject* obj) {
+    PyObject* utf8StrObj = PyUnicode_AsUTF8String(obj);
+    if (!utf8StrObj) {
+        return nullptr;
+    }
+
+    const char* utf8Str = PyBytes_AsString(utf8StrObj);
+    Py_DECREF(utf8StrObj);
+
+    return utf8Str;
 }
 
 bool PythonThread::predict(const char *fun, Mat srcImg, ROI_FRAME &roiFrame)
 {
-    PyObject *pFun = PyObject_GetAttrString(pDetect, fun); // 获取函数名
-    if(!(pFun && PyCallable_Check(pFun)))
-    {
+    PyObject* pFun = PyObject_GetAttrString(pDetect, fun);
+    if (!(pFun && PyCallable_Check(pFun))) {
         errorStr = ERROR("Failed to get detect function");
+        PyErr_Clear(); // 清除异常状态
+        Py_XDECREF(pFun);
         return false;
     }
     // 将 Mat 类型 转 PyObject* 类型
@@ -69,35 +131,33 @@ bool PythonThread::predict(const char *fun, Mat srcImg, ROI_FRAME &roiFrame)
         return false;
     }
 
-    int size = PyList_Size(calsses); /* 获取列表长度 */
-    for (int i = 0 ; i< size; i++)
-    {
-        PyObject *val = PyList_GetItem(calsses, i); /* 获取列表中的元素 */
-        if(!val) continue;
-        char *_class;
-        PyArg_Parse(val, "s", &_class);             /* 解析元素 */
-        roiFrame.classList.append(QString(_class));
+    // 获取类别列表
+    if (!PyObject_ToStringList(calsses, roiFrame.classList)) {
+        errorStr = ERROR("Failed to parse classes list");
+        PyErr_Clear();
+        Py_XDECREF(pRet);
+        return false;
     }
 
-    for (int i = 0 ; i< size; i++)
-    {
-        PyObject *val = PyList_GetItem(confs, i);
-        if(!val) continue;
-        char *conf;
-        PyArg_Parse(val, "s", &conf);
-        roiFrame.confList.append(QString(conf));
+    // 获取置信度列表
+    if (!PyObject_ToStringList(confs, roiFrame.confList)) {
+        errorStr = ERROR("Failed to parse confidences list");
+        PyErr_Clear();
+        Py_XDECREF(pRet);
+        return false;
     }
 
     Mat frame = Mat(ret_array->dimensions[0], ret_array->dimensions[1], CV_8UC3, PyArray_DATA(ret_array)).clone(); // 转 Mat 类型
     roiFrame.frame = frame;
 
-    _Py_XDECREF(pRet); //  PyObject_CallObject
+    Py_XDECREF(pRet);
+
     return true;
 }
 
 void PythonThread::run()
 {
-    bool ret = init("yolov5.temp", "YoloV5"); /* python算法初始化，模块为temp.py,类名为YoloV5 */
+    bool ret = init(L"G:\\RJAZ\\Miniconnda\\data", "yolov5.temp", "YoloV5"); /* python算法初始化，模块为temp.py,类名为YoloV5 */
     if(!ret)
     {
         qDebug() << errorString();
@@ -121,7 +181,7 @@ void PythonThread::run()
             if(!videoFrameQueue.isEmpty())
             {
                 srcFrame = videoFrameQueue.dequeue();
-                if(videoFrameQueue.size() > 3) videoFrameQueue.clear();
+                /*if(videoFrameQueue.size() > 3)*/ videoFrameQueue.clear();
 //                qDebug() << "opencv: " + QString::number(videoFrameQueue.size());
             }
             videoMutex.unlock();
@@ -136,6 +196,7 @@ void PythonThread::run()
         }
         usleep(1);
     }
+    deinit();
 }
 
 QString PythonThread::errorString()
@@ -143,61 +204,112 @@ QString PythonThread::errorString()
     return errorStr;
 }
 
-bool PythonThread::init(const char *module_name, const char *class_name)
-{
-    Py_SetPythonHome(reinterpret_cast<const wchar_t*>(L"G:\\RJAZ\\Miniconnda\\data")); // 设置 python 环境目录
+bool PythonThread::initializePythonInterpreter(const std::wstring& pythonHome) {
+    Py_SetPythonHome(pythonHome.c_str()); // 设置 python 环境目录
     Py_Initialize(); // 初始化
-    if(!Py_IsInitialized())
-    {
-        errorStr = ERROR("python initialization failed.");
+
+    if (Py_IsInitialized() == 0) {
+        std::cerr << "Python initialization failed." << std::endl;
         return false;
     }
-    PyRun_SimpleString("import sys");                             // 加载 sys 模块
-    PyRun_SimpleString("sys.path.append('/')");                   // 设置 python 文件搜索路径
-    PyRun_SimpleString("sys.path.append('./yolov5')");            // 将算法添加进python搜索路径
 
-    PyObject *pModule = PyImport_ImportModule(module_name);       // 调用的文件名
-     if(!pModule)
-     {
-         Py_Finalize();
-         errorStr = ERROR("Failed to import python module.");
-         return false;
-     }
+    PyRun_SimpleString("import sys");
+    PyRun_SimpleString("sys.path.append('/')");                 // 设置 python 文件搜索路径
+    PyRun_SimpleString("sys.path.append('./yolov5')");          // 将算法添加进 python 搜索路径
 
-     PyObject *pDict = PyModule_GetDict(pModule);                  // 加载文件中的函数名、类名
-     _Py_XDECREF(pModule);
-     if(!pDict)
-     {
-         Py_Finalize();
-         errorStr = ERROR("Failed to get the module dictionary.");
-         return false;
-     }
+    return true;
+}
 
-     PyObject *pClass = PyDict_GetItemString(pDict, class_name);   // 获取类名
-     _Py_XDECREF(pDict);
-     if(!pClass)
-     {
-         Py_Finalize();
-         errorStr = ERROR("Failed to get class name.");
-         return false;
-     }
+bool PythonThread::importPythonModule(const std::string& moduleName, const std::string& className,
+                        PyObject*& pModule, PyObject*& pClass) {
+    pModule = PyImport_ImportModule(moduleName.c_str());         // 调用的文件名
+    if (!pModule) {
+        std::cerr << "Failed to import python module." << std::endl;
+        return false;
+    }
 
-     pDetect = PyObject_CallObject(pClass, nullptr);               // 实例化对象，相当于调用'__init__(self)',参数为null
-     _Py_XDECREF(pClass);
-     if(!pDetect)
-     {
-         Py_Finalize();
-         errorStr = ERROR("Failed to instantiate the python class.");
-         return false;
-     }
+    PyObject *pDict = PyModule_GetDict(pModule);                // 加载文件中的函数名、类名
+    if (!pDict) {
+        std::cerr << "Failed to get the module dictionary." << std::endl;
+        Py_XDECREF(pModule);
+        return false;
+    }
 
-     if (_import_array() < 0)
-     {
-         Py_Finalize();
-         errorStr = ERROR("Failed to import numpy");
-         return false;                        // 加载 numpy 模块
-     }
-     return true;
+    pClass = PyDict_GetItemString(pDict, className.c_str());    // 获取类名
+    if (!pClass) {
+        std::cerr << "Failed to get class name." << std::endl;
+        Py_XDECREF(pModule);
+        Py_XDECREF(pDict);
+        return false;
+    }
+
+    return true;
+}
+
+bool PythonThread::instantiatePythonClass(PyObject* pClass, PyObject*& pDetect) {
+    pDetect = PyObject_CallObject(pClass, nullptr);             // 实例化对象，相当于调用'__init__(self)',参数为null
+    if (!pDetect) {
+        std::cerr << "Failed to instantiate the python class." << std::endl;
+        Py_XDECREF(pClass);
+        return false;
+    }
+
+    return true;
+}
+
+bool PythonThread::importNumPy() {
+    if (_import_array() < 0) {
+        std::cerr << "Failed to import numpy." << std::endl;
+        return false;                      // 加载 numpy 模块
+    }
+
+    return true;
+}
+
+bool PythonThread::init(const std::wstring& pythonHome, const std::string& moduleName,
+                        const std::string& className) {
+    if (!initializePythonInterpreter(pythonHome)) {
+        errorStr = ERROR("Python initialization failed.");
+        return false;
+    }
+
+    PyObject* pModule = nullptr;
+    PyObject* pClass = nullptr;
+    if (!importPythonModule(moduleName, className, pModule, pClass)) {
+        Py_Finalize();
+        errorStr = ERROR("Failed to import python module.");
+        return false;
+    }
+
+    pDetect = nullptr;
+    if (!instantiatePythonClass(pClass, pDetect)) {
+        Py_XDECREF(pModule);
+        Py_Finalize();
+        errorStr = ERROR("Failed to instantiate the python class.");
+        return false;
+    }
+
+    if (!importNumPy()) {
+        Py_XDECREF(pDetect);
+        Py_XDECREF(pClass);
+        Py_XDECREF(pModule);
+        Py_Finalize();
+        errorStr = ERROR("Failed to import numpy.");
+        return false;
+    }
+
+    return true;
+}
+
+bool PythonThread::loadAlgorithmModel(const char *func_name) {
+    errorStr = ""; // 重置错误信息
+
+    PyObject* ret = PyObject_CallMethod(pDetect, func_name, ""); // 加载 YoloV 模型，最耗时的过程
+    if (!ret) {
+        errorStr = ERROR("Failed to load algorithm model");
+        return false;
+    }
+    return true;
 }
 
 void PythonThread::deinit()

@@ -3,17 +3,18 @@
 extern QQueue<cv::Mat> videoFrameQueue;
 extern QMutex videoMutex;
 
+#ifdef USING_PYTHON_THREAD
 extern QQueue<ROI_FRAME> roiFrameQueue;
 extern QMutex roiMutex;
-
+#endif
 VideoWidget::VideoWidget(QWidget *parent) : QWidget (parent)
 {
     thread1 = new OpencvThread(this);
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &VideoWidget::slotGetImage);
-
+#ifdef USING_PYTHON_THREAD
     thread2 = new PythonThread(this);
-
+#endif
 }
 
 VideoWidget::~VideoWidget()
@@ -43,28 +44,35 @@ void VideoWidget::paintEvent(QPaintEvent *)
 void VideoWidget::slotGetImage()
 {
     Mat srcFrame;
-#if 0
-    videoMutex.lock();
-    if(!videoFrameQueue.isEmpty())
-        srcFrame = videoFrameQueue.dequeue();
-    videoMutex.unlock();
-#else
+
+#ifdef USING_PYTHON_THREAD
     ROI_FRAME roiFrame;
     roiMutex.lock();
     if(!roiFrameQueue.isEmpty())
     {
         roiFrame = roiFrameQueue.dequeue();
-        if(roiFrameQueue.size() > 3) roiFrameQueue.clear();
-//        qDebug() << "python: " + QString::number(roiFrameQueue.size());
-    }
+        qDebug() << "python: " + QString::number(roiFrameQueue.size());
+//        if(roiFrameQueue.size() > 3) roiFrameQueue.clear();
 
+    }
     roiMutex.unlock();
     srcFrame = roiFrame.frame;
+#else
+    videoMutex.lock();
+    if(!videoFrameQueue.isEmpty())
+        srcFrame = videoFrameQueue.dequeue();
+    videoMutex.unlock();
 #endif
 
-    image = cvMat2QImage(roiFrame.frame);
+    image = cvMat2QImage(srcFrame);
 
-    update();
+    if(image.isNull())
+    {
+        qDebug() << "Null Image";
+    }
+    else
+        update();
+
 }
 
 void VideoWidget::setAddr(const QString Url)
@@ -81,10 +89,11 @@ void VideoWidget::open()
 {
     thread1->open();
     thread1->start();
-    timer->start(50);
-
+#ifdef USING_PYTHON_THREAD
     thread2->open();
     thread2->start();
+#endif
+    timer->start(46); /* 如果出现闪屏现象，调节这个时间，经过测试，python检测的速度随时间变化会变慢，导致显示出现问题 */
 }
 
 void VideoWidget::clear()
@@ -100,6 +109,21 @@ void VideoWidget::close()
         timer->stop();
     }
 
+#ifdef USING_PYTHON_THREAD
+    if(thread2->isRunning())
+    {
+        roiMutex.lock();
+        roiFrameQueue.clear();
+        roiMutex.unlock();
+
+        /* 线程退出之后再进去就会在加载模块的地方失败 */
+//        thread2->close();
+//        thread2->quit();
+//        thread2->wait(500);
+        thread2->pause();
+    }
+#endif
+
     if(thread1->isRunning())
     {
         videoMutex.lock();
@@ -111,16 +135,6 @@ void VideoWidget::close()
         thread1->wait(500);
     }
 
-    if(thread2->isRunning())
-    {
-        roiMutex.lock();
-        roiFrameQueue.clear();
-        roiMutex.unlock();
-
-        thread2->close();
-        thread2->quit();
-        thread2->wait(500);
-    }
     QTimer::singleShot(1, this, SLOT(clear()));
 }
 
