@@ -72,13 +72,13 @@ void OpencvThread::setAddr(int index)
     addrType = false;
 }
 
-void OpencvThread::play()
+void OpencvThread::open()
 {
     QMutexLocker locker(&mutex);
     stopped = true;
 }
 
-void OpencvThread::stop()
+void OpencvThread::close()
 {
     QMutexLocker locker(&mutex);
     stopped = false;

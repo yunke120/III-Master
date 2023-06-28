@@ -10,6 +10,7 @@
 #include <QTimer>
 
 #include "video/opencv2/opencvthread.h"
+#include "video/python/pythonthread.h"
 
 class VideoWidget : public QWidget
 {
@@ -23,9 +24,11 @@ protected:
     void paintEvent(QPaintEvent *);
 
 private:
-    OpencvThread *thread;
+    OpencvThread *thread1;
     QTimer *timer;
     QImage image;
+
+    PythonThread *thread2;
 
 private slots:
     void slotGetImage(void);

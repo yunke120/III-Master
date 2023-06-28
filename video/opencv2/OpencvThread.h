@@ -34,8 +34,8 @@ public slots:
     //设置视频流地址
     void setAddr(const QString url);
     void setAddr(int index);
-    void play();
-    void stop();
+    void open();
+    void close();
 
 signals:
     void sigReset(void);

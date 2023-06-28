@@ -3,12 +3,17 @@
 extern QQueue<cv::Mat> videoFrameQueue;
 extern QMutex videoMutex;
 
+extern QQueue<ROI_FRAME> roiFrameQueue;
+extern QMutex roiMutex;
 
 VideoWidget::VideoWidget(QWidget *parent) : QWidget (parent)
 {
-    thread = new OpencvThread(this);
+    thread1 = new OpencvThread(this);
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &VideoWidget::slotGetImage);
+
+    thread2 = new PythonThread(this);
+
 }
 
 VideoWidget::~VideoWidget()
@@ -38,31 +43,48 @@ void VideoWidget::paintEvent(QPaintEvent *)
 void VideoWidget::slotGetImage()
 {
     Mat srcFrame;
+#if 0
     videoMutex.lock();
     if(!videoFrameQueue.isEmpty())
         srcFrame = videoFrameQueue.dequeue();
     videoMutex.unlock();
+#else
+    ROI_FRAME roiFrame;
+    roiMutex.lock();
+    if(!roiFrameQueue.isEmpty())
+    {
+        roiFrame = roiFrameQueue.dequeue();
+        if(roiFrameQueue.size() > 3) roiFrameQueue.clear();
+//        qDebug() << "python: " + QString::number(roiFrameQueue.size());
+    }
 
-    image = cvMat2QImage(srcFrame);
+    roiMutex.unlock();
+    srcFrame = roiFrame.frame;
+#endif
+
+    image = cvMat2QImage(roiFrame.frame);
 
     update();
 }
 
 void VideoWidget::setAddr(const QString Url)
 {
-    thread->setAddr(Url);
+    thread1->setAddr(Url);
 }
 
 void VideoWidget::setAddr(int index)
 {
-    thread->setAddr(index);
+    thread1->setAddr(index);
 }
 
 void VideoWidget::open()
 {
-    thread->play();
-    thread->start();
+    thread1->open();
+    thread1->start();
     timer->start(50);
+
+    thread2->open();
+    thread2->start();
 }
 
 void VideoWidget::clear()
@@ -73,16 +95,31 @@ void VideoWidget::clear()
 
 void VideoWidget::close()
 {
-    if(thread->isRunning())
+    if(timer->isActive())
+    {
+        timer->stop();
+    }
+
+    if(thread1->isRunning())
     {
         videoMutex.lock();
         videoFrameQueue.clear();
         videoMutex.unlock();
 
-        thread->stop();
-        thread->quit();
-        thread->wait(500);
-        timer->stop();
+        thread1->close();
+        thread1->quit();
+        thread1->wait(500);
+    }
+
+    if(thread2->isRunning())
+    {
+        roiMutex.lock();
+        roiFrameQueue.clear();
+        roiMutex.unlock();
+
+        thread2->close();
+        thread2->quit();
+        thread2->wait(500);
     }
     QTimer::singleShot(1, this, SLOT(clear()));
 }

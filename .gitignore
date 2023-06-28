@@ -34,3 +34,4 @@
 *.pro.user
 LOGS/
 *.mp4
+bin/yolov5/
