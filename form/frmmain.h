@@ -7,6 +7,8 @@
 
 #include "video/widget/videowidget.h"
 
+#define CONFIG_FILEPATH  "./config.ini"
+
 class QAbstractButton;
 
 namespace Ui {
@@ -20,7 +22,8 @@ class frmMain : public QWidget
 public:
     explicit frmMain(QWidget *parent = 0);
     ~frmMain();
-
+private:
+    bool createFolder(const QString& folder);
 protected:
     bool eventFilter(QObject *watched, QEvent *event);
 
@@ -72,6 +75,14 @@ private slots:
     void on_btnRobotLeft_clicked();
     void on_btnRobotRight_clicked();
     void on_btnRobotStop_clicked();
+    void on_btnSaveConfig_clicked();
+    void on_btnSaveImage_clicked();
+    void on_btnC1Cancel_clicked();
+    void on_btnSaveVideo_clicked();
+    void on_btnC1Apply_clicked();
+    void on_btnC1Confirm_clicked();
+    void on_btnC2Cancel_clicked();
+    void on_btnC2Confirm_clicked();
 };
 
 #endif // FRMMAIN_H

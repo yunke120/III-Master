@@ -20,6 +20,20 @@ frmMain::~frmMain()
     delete ui;
 }
 
+/**
+ * @brief 判断文件夹是否存在，不存在就创建
+ *
+ * @param folder 文件夹
+ * @return true 存在或创建成功
+ * @return false 不存在或创建失败
+ */
+bool frmMain::createFolder(const QString &folder)
+{
+    QDir _dir(folder);
+    if(_dir.exists()) return true;
+    else return _dir.mkdir(folder);
+}
+
 bool frmMain::eventFilter(QObject *watched, QEvent *event)
 {
     if (watched == ui->widgetTitle) {
@@ -247,6 +261,12 @@ void frmMain::initSerialPort()
     }
 }
 
+void frmMain::initConfig()
+{
+    QSettings settings(CONFIG_FILEPATH, QSettings::IniFormat);
+
+}
+
 void frmMain::on_btnMenu_Min_clicked()
 {
     showMinimized();
@@ -337,4 +357,98 @@ void frmMain::on_btnRobotRight_clicked()
 void frmMain::on_btnRobotStop_clicked()
 {
 
+}
+
+void frmMain::on_btnSaveConfig_clicked()
+{
+    QString filepath = QFileDialog::getOpenFileName(this, "选择配置文件", "./", "INI Files(*.ini)");
+    if(filepath.isEmpty()) return;
+    ui->leSaveConfig->setText(filepath);
+}
+
+void frmMain::on_btnSaveImage_clicked()
+{
+    QString path = QFileDialog::getExistingDirectory(this, "设置截图保存路径", "./");
+    if(path.isEmpty()) return;
+
+    ui->leSaveImage->setText(path);
+}
+
+void frmMain::on_btnSaveVideo_clicked()
+{
+    QString path = QFileDialog::getExistingDirectory(this, "设置录像保存路径", "./");
+    if(path.isEmpty()) return;
+
+    ui->leSaveVideo->setText(path);
+}
+
+void frmMain::on_btnC1Cancel_clicked()
+{
+
+}
+
+
+void frmMain::on_btnC1Apply_clicked()
+{
+    QSettings settings(CONFIG_FILEPATH, QSettings::IniFormat);
+
+    QString _configSavePath = ui->leSaveConfig->text();
+    QString _imageSavePath = ui->leSaveImage->text();
+    QString _videoSavePath = ui->leSaveVideo->text();
+
+    settings.setValue("configSavePath", _configSavePath);
+    settings.setValue("imageSavePath", _imageSavePath);
+    settings.setValue("videoSavePath", _videoSavePath);
+
+    if(settings.status() != QSettings::NoError)
+    {
+        QMessageBox::warning(this, "警告", "设置保存失败");
+    }
+}
+
+void frmMain::on_btnC1Confirm_clicked()
+{
+    QSettings settings(CONFIG_FILEPATH, QSettings::IniFormat);
+
+    QString _configSavePath = ui->leSaveConfig->text();
+    QString _imageSavePath = ui->leSaveImage->text();
+    QString _videoSavePath = ui->leSaveVideo->text();
+
+    settings.setValue("configSavePath", _configSavePath);
+    settings.setValue("imageSavePath", _imageSavePath);
+    settings.setValue("videoSavePath", _videoSavePath);
+
+    if(settings.status() != QSettings::NoError)
+    {
+        QMessageBox::warning(this, "警告", "设置保存失败");
+    }
+}
+
+void frmMain::on_btnC2Cancel_clicked()
+{
+
+}
+
+void frmMain::on_btnC2Confirm_clicked()
+{
+    QString port = ui->cbPorts->currentText();
+    int databit = ui->cbDatas->currentIndex();
+    int bandrate = ui->cbBandrate->currentIndex();
+    int stopbit = ui->cbStops->currentIndex();
+    int parity = ui->cbParity->currentIndex();
+    QString videoaddr = ui->leVideoAddr->text();
+
+    QSettings settings(CONFIG_FILEPATH, QSettings::IniFormat);
+    settings.setValue("port", port);
+    settings.setValue("databit", QString::number(databit));
+    settings.setValue("bandrate", QString::number(bandrate));
+    settings.setValue("stopbit", QString::number(stopbit));
+    settings.setValue("parity", QString::number(parity));
+    settings.setValue("videoaddr", videoaddr);
+
+    if(settings.status() != QSettings::NoError)
+    {
+        QMessageBox::warning(this, "警告", "设置保存失败");
+    }
+    else qDebug() << "保存配置成功";
 }
