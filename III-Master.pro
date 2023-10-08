@@ -1,4 +1,4 @@
-QT += core gui
+QT += core gui serialport
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 greaterThan(QT_MAJOR_VERSION, 5): QT += core5compat
 
@@ -17,4 +17,6 @@ include ($$PWD/form/form.pri)
 INCLUDEPATH += $$PWD/./core_base
 include ($$PWD/./core_base/core_base.pri)
 include ($$PWD/video/video.pri)
+
+DISTFILES +=
 

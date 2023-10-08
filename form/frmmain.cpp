@@ -12,6 +12,7 @@ frmMain::frmMain(QWidget *parent) : QWidget(parent), ui(new Ui::frmMain)
     this->initStyle();
     this->initLeftMain();
     this->initLeftConfig();
+    this->initSerialPort();
 }
 
 frmMain::~frmMain()
@@ -71,10 +72,10 @@ void frmMain::initForm()
     QFont font;
     font.setPixelSize(25);
     ui->labTitle->setFont(font);
-    ui->labTitle->setText("III-Robot控制终端");
+    ui->labTitle->setText("III-Robot 控制终端");
     this->setWindowTitle(ui->labTitle->text());
 
-    ui->stackedWidget->setStyleSheet("QLabel{font:60px;}");
+    ui->stackedWidget->setStyleSheet("QLabel{font:16px;} QPushButton{font:16px;}");
 
     QSize icoSize(32, 32);
     int icoWidth = 85;
@@ -119,6 +120,7 @@ void frmMain::initStyle()
     this->darkBgColor = panelColor;
     this->normalTextColor = textColor;
     this->darkTextColor = normalTextColor;
+
 }
 
 void frmMain::buttonClick()
@@ -130,12 +132,12 @@ void frmMain::buttonClick()
     foreach (QAbstractButton *btn, tbtns) {
         btn->setChecked(btn == b);
     }
-
+    qDebug() << name;
     if (name == "主界面") {
         ui->stackedWidget->setCurrentIndex(0);
     } else if (name == "系统设置") {
         ui->stackedWidget->setCurrentIndex(1);
-    } else if (name == "警情查询") {
+    } else if (name == "日志查询") {
         ui->stackedWidget->setCurrentIndex(2);
     } else if (name == "调试帮助") {
         ui->stackedWidget->setCurrentIndex(3);
@@ -172,7 +174,7 @@ void frmMain::initLeftMain()
 void frmMain::initLeftConfig()
 {
     iconsConfig << 0xf031 << 0xf036 << 0xf249 << 0xf055 << 0xf05a << 0xf249;
-    btnsConfig << ui->tbtnConfig1 << ui->tbtnConfig2 << ui->tbtnConfig3 << ui->tbtnConfig4 << ui->tbtnConfig5 << ui->tbtnConfig6;
+    btnsConfig << ui->tbtnConfig1 << ui->tbtnConfig2 << ui->tbtnConfig3 << ui->tbtnConfig5 << ui->tbtnConfig6;
 
     int count = btnsConfig.count();
     for (int i = 0; i < count; ++i) {
@@ -222,9 +224,27 @@ void frmMain::leftConfigClick()
     for (int i = 0; i < count; ++i) {
         QAbstractButton *btn = btnsConfig.at(i);
         btn->setChecked(btn == b);
+        if(btn == b)
+            ui->stackedWidget3->setCurrentIndex(i);
     }
 
-    ui->lab2->setText(name);
+}
+
+void frmMain::initSerialPort()
+{
+    pSerial = new QSerialPort(this);
+    pSerial->setBaudRate(QSerialPort::Baud115200);
+    pSerial->setDataBits(QSerialPort::Data8);
+    pSerial->setStopBits(QSerialPort::OneStop);
+    pSerial->setParity(QSerialPort::NoParity);
+    pSerial->setFlowControl(QSerialPort::NoFlowControl);
+    connect(pSerial, &QSerialPort::readyRead, this, &frmMain::slotSerialReadyRead);
+
+    ui->cbPorts->clear();
+    foreach(const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) /* 初始化串口列表 */
+    {
+        ui->cbPorts->addItem(info.portName());
+    }
 }
 
 void frmMain::on_btnMenu_Min_clicked()
@@ -260,8 +280,8 @@ void frmMain::on_btnOpenVideo_clicked()
     {
         ui->btnOpenVideo->setText("关闭视频");
 //        ui->widgetVideo->setAddr("rtsp://127.0.0.1:8554/main"); // 网络流
-//        ui->widgetVideo->setAddr("./test.mp4"); // 本地视频文件
-        ui->widgetVideo->setAddr(0); // 本地摄像头
+        ui->widgetVideo->setAddr("./dream.mp4"); // 本地视频文件
+//        ui->widgetVideo->setAddr(0); // 本地摄像头
         ui->widgetVideo->open();
     }
     else
@@ -269,4 +289,52 @@ void frmMain::on_btnOpenVideo_clicked()
         ui->btnOpenVideo->setText("打开视频");
         ui->widgetVideo->close();
     }
+}
+
+/**
+ * @brief 串口中断函数
+ */
+void frmMain::slotSerialReadyRead()
+{
+
+}
+
+/**
+ * @brief 控制机器人前进
+ */
+void frmMain::on_btnRobotUp_clicked()
+{
+
+}
+
+/**
+ * @brief 控制机器人后退
+ */
+void frmMain::on_btnRobotDown_clicked()
+{
+
+}
+
+/**
+ * @brief 控制机器人左移
+ */
+void frmMain::on_btnRobotLeft_clicked()
+{
+
+}
+
+/**
+ * @brief 控制机器人右移
+ */
+void frmMain::on_btnRobotRight_clicked()
+{
+
+}
+
+/**
+ * @brief 控制机器人停止
+ */
+void frmMain::on_btnRobotStop_clicked()
+{
+
 }

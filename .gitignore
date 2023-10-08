@@ -34,5 +34,7 @@
 *.pro.user
 LOGS/
 *.mp4
+*.mkv
+*.zip
 bin/yolov5/
 video/python/yolov5/

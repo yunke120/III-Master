@@ -8,5 +8,9 @@
         <file>image/main_help.png</file>
         <file>image/main_main.png</file>
         <file>image/main_person.png</file>
+        <file>image/ptzdown.png</file>
+        <file>image/ptzleft.png</file>
+        <file>image/ptzright.png</file>
+        <file>image/ptzup.png</file>
     </qresource>
 </RCC>

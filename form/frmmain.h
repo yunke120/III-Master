@@ -2,6 +2,8 @@
 #define FRMMAIN_H
 
 #include <QWidget>
+#include <QSerialPort>
+#include <QSerialPortInfo>
 
 #include "video/widget/videowidget.h"
 
@@ -31,6 +33,8 @@ private:
     QList<int> iconsConfig;
     QList<QAbstractButton *> btnsConfig;
 
+    QSerialPort *pSerial;                       /* 串口对象 */
+
 private:
     //根据QSS样式获取对应颜色值
     QString borderColor;
@@ -54,12 +58,20 @@ private slots:
     void initLeftConfig();
     void leftMainClick();
     void leftConfigClick();
+    void initSerialPort();
 
 private slots:
     void on_btnMenu_Min_clicked();
     void on_btnMenu_Max_clicked();
     void on_btnMenu_Close_clicked();
     void on_btnOpenVideo_clicked();
+
+    void slotSerialReadyRead();
+    void on_btnRobotUp_clicked();
+    void on_btnRobotDown_clicked();
+    void on_btnRobotLeft_clicked();
+    void on_btnRobotRight_clicked();
+    void on_btnRobotStop_clicked();
 };
 
 #endif // FRMMAIN_H
