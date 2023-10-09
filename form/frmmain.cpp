@@ -15,6 +15,16 @@ frmMain::frmMain(QWidget *parent) : QWidget(parent), ui(new Ui::frmMain)
     this->initSerialPort();
 
     connect(ui->stackedWidget3, &QStackedWidget::currentChanged, this, &frmMain::slotConfigChange);
+
+//    pStatusWidget = new StatusWidget(this);
+    pStatusWidget = new StatusWidget(this,StatusWidget::EnterDirection::LeftIn, StatusWidget::LeaveDirection::BottomOut);
+    /*
+
+2363 0 2373 0
+2373 0 2373 753
+*/
+    pStatusWidget->setStyleSheet("QWidget{border-radius:10px}");
+    pStatusWidget->hide();
 }
 
 frmMain::~frmMain()
@@ -539,6 +549,10 @@ void frmMain::on_btnOpenSerial_clicked()
             return;
         }
         ui->btnOpenSerial->setText("断开通信");
+
+        pStatusWidget->setShowMessage("提示", "打开串口成功");
+        pStatusWidget->start();
+
     }
     else
     {

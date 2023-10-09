@@ -6,6 +6,7 @@
 #include <QSerialPortInfo>
 
 #include "video/widget/videowidget.h"
+#include "statuswidget/statuswidget.h"
 
 #define CONFIG_FILEPATH  "./config.ini"
 
@@ -37,6 +38,7 @@ private:
     QList<QAbstractButton *> btnsConfig;
 
     QSerialPort *pSerial;                       /* 串口对象 */
+    StatusWidget *pStatusWidget;
 
 private:
     //根据QSS样式获取对应颜色值

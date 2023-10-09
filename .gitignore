@@ -33,6 +33,7 @@
 
 *.pro.user
 LOGS/
+repos/
 *.mp4
 *.mkv
 *.zip

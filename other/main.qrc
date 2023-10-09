@@ -13,5 +13,6 @@
         <file>image/ptzright.png</file>
         <file>image/ptzup.png</file>
         <file>image/refresh.png</file>
+        <file>image/hint.png</file>
     </qresource>
 </RCC>
