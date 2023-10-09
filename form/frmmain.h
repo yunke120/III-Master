@@ -20,7 +20,7 @@ class frmMain : public QWidget
     Q_OBJECT
 
 public:
-    explicit frmMain(QWidget *parent = 0);
+    explicit frmMain(QWidget *parent = nullptr);
     ~frmMain();
 private:
     bool createFolder(const QString& folder);
@@ -62,6 +62,7 @@ private slots:
     void leftMainClick();
     void leftConfigClick();
     void initSerialPort();
+    void initConfig();
 
 private slots:
     void on_btnMenu_Min_clicked();
@@ -70,6 +71,7 @@ private slots:
     void on_btnOpenVideo_clicked();
 
     void slotSerialReadyRead();
+    void slotConfigChange(int index);
     void on_btnRobotUp_clicked();
     void on_btnRobotDown_clicked();
     void on_btnRobotLeft_clicked();
@@ -83,6 +85,9 @@ private slots:
     void on_btnC1Confirm_clicked();
     void on_btnC2Cancel_clicked();
     void on_btnC2Confirm_clicked();
+    void on_btnRefreshPort_clicked();
+
+    void on_btnOpenSerial_clicked();
 };
 
 #endif // FRMMAIN_H

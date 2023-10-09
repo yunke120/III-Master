@@ -12,5 +12,6 @@
         <file>image/ptzleft.png</file>
         <file>image/ptzright.png</file>
         <file>image/ptzup.png</file>
+        <file>image/refresh.png</file>
     </qresource>
 </RCC>

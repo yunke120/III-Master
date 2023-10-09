@@ -13,6 +13,8 @@ frmMain::frmMain(QWidget *parent) : QWidget(parent), ui(new Ui::frmMain)
     this->initLeftMain();
     this->initLeftConfig();
     this->initSerialPort();
+
+    connect(ui->stackedWidget3, &QStackedWidget::currentChanged, this, &frmMain::slotConfigChange);
 }
 
 frmMain::~frmMain()
@@ -319,6 +321,44 @@ void frmMain::slotSerialReadyRead()
 
 }
 
+void frmMain::slotConfigChange(int index)
+{
+    QString group = QString("Config%1").arg(index+1);
+    qDebug() << group;
+    QSettings settings(CONFIG_FILEPATH, QSettings::IniFormat);
+    if(index == 0)
+    {
+        int _1 = settings.value("Config1/Language").toInt();
+        int _2 = settings.value("Config1/Theme").toInt();
+        QString configSavePath = settings.value("Config1/configSavePath").toString();
+        QString imageSavePath = settings.value("Config1/imageSavePath").toString();
+        QString videoSavePath = settings.value("Config1/videoSavePath").toString();
+
+        ui->cbLanguage->setCurrentIndex(_1);
+        ui->cbTheme->setCurrentIndex(_2);
+        ui->leSaveConfig->setText(configSavePath);
+        ui->leSaveImage->setText(imageSavePath);
+        ui->leSaveVideo->setText(videoSavePath);
+    }
+    else if(index == 1)
+    {
+        QSettings settings(CONFIG_FILEPATH, QSettings::IniFormat);
+        QString port = settings.value("Config2/port").toString();
+        int databit = settings.value("Config2/databit").toInt();
+        int bandrate = settings.value("Config2/bandrate").toInt();
+        int stopbit = settings.value("Config2/stopbit").toInt();
+        int parity = settings.value("Config2/parity").toInt();
+        QString videoaddr = settings.value("Config2/videoaddr").toString();
+
+        ui->cbPorts->setCurrentText(port);
+        ui->cbDatas->setCurrentIndex(databit);
+        ui->cbBandrate->setCurrentIndex(bandrate);
+        ui->cbStops->setCurrentIndex(stopbit);
+        ui->cbParity->setCurrentIndex(parity);
+        ui->leVideoAddr->setText(videoaddr);
+    }
+}
+
 /**
  * @brief 控制机器人前进
  */
@@ -361,14 +401,14 @@ void frmMain::on_btnRobotStop_clicked()
 
 void frmMain::on_btnSaveConfig_clicked()
 {
-    QString filepath = QFileDialog::getOpenFileName(this, "选择配置文件", "./", "INI Files(*.ini)");
+    QString filepath = QFileDialog::getOpenFileName(this, "选择配置文件", "./", "INI Files(*.ini)",nullptr,QFileDialog::DontUseNativeDialog);
     if(filepath.isEmpty()) return;
     ui->leSaveConfig->setText(filepath);
 }
 
 void frmMain::on_btnSaveImage_clicked()
 {
-    QString path = QFileDialog::getExistingDirectory(this, "设置截图保存路径", "./");
+    QString path = QFileDialog::getExistingDirectory(this, "设置截图保存路径", "./", QFileDialog::DontUseNativeDialog);
     if(path.isEmpty()) return;
 
     ui->leSaveImage->setText(path);
@@ -376,7 +416,7 @@ void frmMain::on_btnSaveImage_clicked()
 
 void frmMain::on_btnSaveVideo_clicked()
 {
-    QString path = QFileDialog::getExistingDirectory(this, "设置录像保存路径", "./");
+    QString path = QFileDialog::getExistingDirectory(this, "设置录像保存路径", "./", QFileDialog::DontUseNativeDialog);
     if(path.isEmpty()) return;
 
     ui->leSaveVideo->setText(path);
@@ -384,49 +424,61 @@ void frmMain::on_btnSaveVideo_clicked()
 
 void frmMain::on_btnC1Cancel_clicked()
 {
-
+    slotConfigChange(0);
 }
 
 
 void frmMain::on_btnC1Apply_clicked()
 {
-    QSettings settings(CONFIG_FILEPATH, QSettings::IniFormat);
-
     QString _configSavePath = ui->leSaveConfig->text();
     QString _imageSavePath = ui->leSaveImage->text();
     QString _videoSavePath = ui->leSaveVideo->text();
 
+    QSettings settings(CONFIG_FILEPATH, QSettings::IniFormat);
+    settings.beginGroup("Config1");
+    settings.setValue("Language", ui->cbLanguage->currentIndex());
+    settings.setValue("Theme", ui->cbTheme->currentIndex());
     settings.setValue("configSavePath", _configSavePath);
     settings.setValue("imageSavePath", _imageSavePath);
     settings.setValue("videoSavePath", _videoSavePath);
+    settings.endGroup();
 
     if(settings.status() != QSettings::NoError)
     {
         QMessageBox::warning(this, "警告", "设置保存失败");
+    }
+    else
+    {
+        QMessageBox::information(this, "提示", "应用成功");
     }
 }
 
 void frmMain::on_btnC1Confirm_clicked()
 {
-    QSettings settings(CONFIG_FILEPATH, QSettings::IniFormat);
-
     QString _configSavePath = ui->leSaveConfig->text();
     QString _imageSavePath = ui->leSaveImage->text();
     QString _videoSavePath = ui->leSaveVideo->text();
 
+    QSettings settings(CONFIG_FILEPATH, QSettings::IniFormat);
+    settings.beginGroup("Config1");
     settings.setValue("configSavePath", _configSavePath);
     settings.setValue("imageSavePath", _imageSavePath);
     settings.setValue("videoSavePath", _videoSavePath);
+    settings.endGroup();
 
     if(settings.status() != QSettings::NoError)
     {
         QMessageBox::warning(this, "警告", "设置保存失败");
     }
+    else
+    {
+        QMessageBox::information(this, "提示", "保存成功");
+    }
 }
 
 void frmMain::on_btnC2Cancel_clicked()
 {
-
+    slotConfigChange(1);
 }
 
 void frmMain::on_btnC2Confirm_clicked()
@@ -439,16 +491,61 @@ void frmMain::on_btnC2Confirm_clicked()
     QString videoaddr = ui->leVideoAddr->text();
 
     QSettings settings(CONFIG_FILEPATH, QSettings::IniFormat);
+    settings.beginGroup("Config2");
     settings.setValue("port", port);
     settings.setValue("databit", QString::number(databit));
     settings.setValue("bandrate", QString::number(bandrate));
     settings.setValue("stopbit", QString::number(stopbit));
     settings.setValue("parity", QString::number(parity));
     settings.setValue("videoaddr", videoaddr);
-
+    settings.endGroup();
     if(settings.status() != QSettings::NoError)
     {
         QMessageBox::warning(this, "警告", "设置保存失败");
     }
-    else qDebug() << "保存配置成功";
+    else
+    {
+        QMessageBox::information(this, "提示", "保存成功");
+    }
 }
+
+void frmMain::on_btnRefreshPort_clicked()
+{
+    ui->cbPorts->clear();
+    foreach(const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) /* 初始化串口列表 */
+    {
+        ui->cbPorts->addItem(info.portName());
+    }
+}
+
+
+
+void frmMain::on_btnOpenSerial_clicked()
+{
+    if(ui->btnOpenSerial->text() == "打开通信")
+    {
+        pSerial->setPortName(ui->cbPorts->currentText());
+        if(!pSerial->open(QIODevice::ReadWrite))
+        {
+            QMessageBox* msgBox = new QMessageBox(this);
+
+            msgBox->setAttribute(Qt::WA_DeleteOnClose);
+            msgBox->setWindowTitle(tr("警告"));
+            msgBox->setText(pSerial->errorString());
+            msgBox->setIconPixmap(QPixmap(":/image/main_exit.png").scaled(100,100));
+            QPushButton* yesButton = msgBox->addButton(tr("确认"), QMessageBox::AcceptRole);
+            msgBox->setDefaultButton(yesButton);
+            msgBox->exec();
+            return;
+        }
+        ui->btnOpenSerial->setText("断开通信");
+    }
+    else
+    {
+        if(!pSerial->isOpen()) return;
+        pSerial->close();
+        ui->btnOpenSerial->setText("打开通信");
+    }
+}
+
+
