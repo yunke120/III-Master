@@ -18,5 +18,6 @@ INCLUDEPATH += $$PWD/./core_base
 include ($$PWD/./core_base/core_base.pri)
 include ($$PWD/video/video.pri)
 include ($$PWD/statuswidget/statuswidget.pri)
+include ($$PWD/log4qt/log4qt.pri)
 DISTFILES +=
 

@@ -37,5 +37,5 @@ repos/
 *.mp4
 *.mkv
 *.zip
-bin/yolov5/
+msvc-build/yolov5/
 video/python/yolov5/

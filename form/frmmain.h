@@ -5,10 +5,16 @@
 #include <QSerialPort>
 #include <QSerialPortInfo>
 
+// video
 #include "video/widget/videowidget.h"
+
+// statuswidget
 #include "statuswidget/statuswidget.h"
 
+
+
 #define CONFIG_FILEPATH  "./config.ini"
+
 
 class QAbstractButton;
 
@@ -65,6 +71,7 @@ private slots:
     void leftConfigClick();
     void initSerialPort();
     void initConfig();
+
 
 private slots:
     void on_btnMenu_Min_clicked();

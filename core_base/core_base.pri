@@ -15,8 +15,16 @@ OBJECTS_DIR = temp/obj
 #指定编译生成的可执行文件放到源码上一级目录下的bin目录
 !android {
 !wasm {
-DESTDIR = $$PWD/../bin
-}}
+message("Current compiler: $$QMAKE_CC")
+contains(QMAKE_CC, cl) {
+message("Current compiler: MSVC")
+    DESTDIR = $$PWD/../msvc-build
+}
+
+contains(QMAKE_CC, gcc) {
+message("Current compiler: MinGW")
+    DESTDIR = $$PWD/../mingw-build
+}}}
 
 #把所有警告都关掉眼不见为净
 CONFIG += warn_off

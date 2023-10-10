@@ -4,6 +4,7 @@
 #include "ui_frmmain.h"
 #include "iconhelper.h"
 #include "quihelper.h"
+#include "log4qt/log.h"
 
 frmMain::frmMain(QWidget *parent) : QWidget(parent), ui(new Ui::frmMain)
 {
@@ -16,13 +17,7 @@ frmMain::frmMain(QWidget *parent) : QWidget(parent), ui(new Ui::frmMain)
 
     connect(ui->stackedWidget3, &QStackedWidget::currentChanged, this, &frmMain::slotConfigChange);
 
-//    pStatusWidget = new StatusWidget(this);
     pStatusWidget = new StatusWidget(this,StatusWidget::EnterDirection::LeftIn, StatusWidget::LeaveDirection::BottomOut);
-    /*
-
-2363 0 2373 0
-2373 0 2373 753
-*/
     pStatusWidget->setStyleSheet("QWidget{border-radius:10px}");
     pStatusWidget->hide();
 }
@@ -553,12 +548,15 @@ void frmMain::on_btnOpenSerial_clicked()
         pStatusWidget->setShowMessage("提示", "打开串口成功");
         pStatusWidget->start();
 
+        LogManager::instance().getLogger()->info("打开串口成功");
+
     }
     else
     {
         if(!pSerial->isOpen()) return;
         pSerial->close();
         ui->btnOpenSerial->setText("打开通信");
+        LogManager::instance().getLogger()->warn("打开串口成功");
     }
 }
 
