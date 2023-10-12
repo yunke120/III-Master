@@ -322,7 +322,7 @@
       <string notr="true"/>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="page1">
       <layout class="QHBoxLayout" name="horizontalLayout">
@@ -1348,25 +1348,88 @@ background-color: rgb(255, 255, 255);</string>
       </layout>
      </widget>
      <widget class="QWidget" name="page3">
-      <widget class="QToolButton" name="toolButton">
-       <property name="geometry">
-        <rect>
-         <x>320</x>
-         <y>220</y>
-         <width>91</width>
-         <height>41</height>
-        </rect>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">qproperty-icon:url(:/image/main_config.png)</string>
-       </property>
-       <property name="text">
-        <string>打开穿厚</string>
-       </property>
-       <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonTextBesideIcon</enum>
-       </property>
-      </widget>
+      <layout class="QGridLayout" name="gridLayout_10">
+       <item row="0" column="0">
+        <widget class="QLineEdit" name="leLogFile"/>
+       </item>
+       <item row="0" column="1">
+        <widget class="QToolButton" name="tbSelectLogFile">
+         <property name="text">
+          <string>选择日志文件</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <spacer name="horizontalSpacer_17">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>223</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="3">
+        <widget class="QLabel" name="label_14">
+         <property name="text">
+          <string>日志等级：</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="4">
+        <widget class="QComboBox" name="cbLogLevel">
+         <item>
+          <property name="text">
+           <string>INFO</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>WARN</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>ERROR</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="0" column="5">
+        <widget class="QToolButton" name="tbFilter">
+         <property name="styleSheet">
+          <string notr="true">qproperty-icon:url(:/image/filter.png);
+qproperty-iconSize:20px 20px;
+</string>
+         </property>
+         <property name="text">
+          <string>过滤</string>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextBesideIcon</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="6">
+        <spacer name="horizontalSpacer_18">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>223</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="0" colspan="7">
+        <widget class="QTableWidget" name="logTableWidget"/>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="page4">
       <layout class="QVBoxLayout" name="verticalLayout_4">

@@ -14,7 +14,7 @@ frmMain::frmMain(QWidget *parent) : QWidget(parent), ui(new Ui::frmMain)
     this->initLeftMain();
     this->initLeftConfig();
     this->initSerialPort();
-
+    this->initLogSql();
     connect(ui->stackedWidget3, &QStackedWidget::currentChanged, this, &frmMain::slotConfigChange);
 
     pStatusWidget = new StatusWidget(this,StatusWidget::EnterDirection::LeftIn, StatusWidget::LeaveDirection::BottomOut);
@@ -72,6 +72,32 @@ void frmMain::getQssColor(const QString &qss, QString &textColor, QString &panel
     getQssColor(qss, "DarkColorStart:", darkColorStart);
     getQssColor(qss, "DarkColorEnd:", darkColorEnd);
     getQssColor(qss, "HighColor:", highColor);
+}
+
+void frmMain::appendDatat2LogWidget(const QList<QVariantMap> &data)
+{
+    ui->logTableWidget->setRowCount(0);
+    int numRows = ui->logTableWidget->rowCount();
+    ui->logTableWidget->setRowCount(numRows + data.size());
+
+    for (const QVariantMap& log : data) {
+        QTableWidgetItem *item_0 = new QTableWidgetItem(QString::number(numRows+1));
+        item_0->setTextAlignment(Qt::AlignCenter); // 居中对齐
+        ui->logTableWidget->setItem(numRows, 0, item_0);
+
+        QTableWidgetItem *item_1 = new QTableWidgetItem(log["timestamp"].toDateTime().toString());
+        item_1->setTextAlignment(Qt::AlignCenter); // 居中对齐
+        ui->logTableWidget->setItem(numRows, 1, item_1);
+
+        QTableWidgetItem *item_2 = new QTableWidgetItem(log["level"].toString());
+        item_2->setTextAlignment(Qt::AlignCenter); // 居中对齐
+        ui->logTableWidget->setItem(numRows, 2, item_2);
+
+        QTableWidgetItem *item_3 = new QTableWidgetItem(log["message"].toString());
+//        item_3->setTextAlignment(Qt::AlignCenter); // 居中对齐
+        ui->logTableWidget->setItem(numRows, 3, item_3);
+        numRows++;
+    }
 }
 
 void frmMain::initForm()
@@ -272,6 +298,63 @@ void frmMain::initConfig()
 {
     QSettings settings(CONFIG_FILEPATH, QSettings::IniFormat);
 
+}
+
+void frmMain::initLogSql()
+{
+    QDateTime currentDateTime = QDateTime::currentDateTime();
+    QString currentDate = currentDateTime.toString("yyyy-MM-dd");
+
+    // 检查是否需要生成新的数据库文件
+    static QString currentDbName;
+    static QString logsDirectory = "logs";
+    if (currentDate != currentDbName) {
+        currentDbName = logsDirectory + "/" + currentDate + ".db";
+    }
+
+    plogSql = new LoggerSql(currentDbName);
+
+    // 记录一些日志
+//    plogSql->log(LoggerSql::eINFO, "This is an informational message.");
+//    plogSql->log(LoggerSql::eERROR, "An error occurred.");
+//    plogSql->log(LoggerSql::eINFO, "Another informational message.");
+//    plogSql->log(LoggerSql::eWARN, "中文测试1234567890");
+
+    // 获取并打印所有日志
+//    QList<QVariantMap> allLogs = plogSql->getLogs();
+//    qDebug() << "All Logs:";
+//    for (const QVariantMap& log : allLogs) {
+//        qDebug() << "ID: " << log["id"].toInt()
+//                 << "Timestamp: " << log["timestamp"].toDateTime().toString()
+//                 << "Level: " << log["level"].toString()
+//                 << "Message: " << log["message"].toString();
+//    }
+
+//    // 获取并打印特定等级的日志
+//    QList<QVariantMap> errorLogs = plogSql->getLogs(LoggerSql::LogLevel::eWARN);
+//    qDebug() << errorLogs.length();
+//    qDebug() << "Error Logs:";
+//    for (const QVariantMap& log : errorLogs) {
+//        qDebug() << "ID: " << log["id"].toInt()
+//                 << "Timestamp: " << log["timestamp"].toDateTime().toString()
+//                 << "Level: " << log["level"].toString()
+//                 << "Message: " << log["message"].toString();
+//    }
+
+    ui->logTableWidget->verticalHeader()->setVisible(false);
+    ui->logTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    // 调整表格列宽
+
+    // 设置表头
+    QStringList headers;
+    headers << "条目" << "时间" << "日志等级" << "消息";
+    ui->logTableWidget->setColumnCount(4);
+    ui->logTableWidget->setHorizontalHeaderLabels(headers);
+    // 设置列的stretch属性，让它们自动拉伸
+    ui->logTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
+    ui->logTableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    ui->logTableWidget->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Interactive);
+    ui->logTableWidget->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
 }
 
 void frmMain::on_btnMenu_Min_clicked()
@@ -549,15 +632,27 @@ void frmMain::on_btnOpenSerial_clicked()
         pStatusWidget->start();
 
         LogManager::instance().getLogger()->info("打开串口成功");
-
     }
     else
     {
         if(!pSerial->isOpen()) return;
         pSerial->close();
         ui->btnOpenSerial->setText("打开通信");
-        LogManager::instance().getLogger()->warn("打开串口成功");
+        LogManager::instance().getLogger()->warn("关闭串口");
     }
 }
 
 
+
+void frmMain::on_tbFilter_clicked()
+{
+    int level = ui->cbLogLevel->currentIndex();
+    LoggerSql::LogLevel _level = static_cast<LoggerSql::LogLevel>(level);
+    QList<QVariantMap> data = plogSql->getLogs(_level);
+    appendDatat2LogWidget(data);
+}
+
+void frmMain::on_tbSelectLogFile_clicked()
+{
+
+}

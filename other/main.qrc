@@ -14,5 +14,6 @@
         <file>image/ptzup.png</file>
         <file>image/refresh.png</file>
         <file>image/hint.png</file>
+        <file>image/filter.png</file>
     </qresource>
 </RCC>

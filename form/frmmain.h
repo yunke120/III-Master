@@ -5,13 +5,14 @@
 #include <QSerialPort>
 #include <QSerialPortInfo>
 
+
 // video
 #include "video/widget/videowidget.h"
 
 // statuswidget
 #include "statuswidget/statuswidget.h"
 
-
+#include "sql/sql.h"
 
 #define CONFIG_FILEPATH  "./config.ini"
 
@@ -45,6 +46,7 @@ private:
 
     QSerialPort *pSerial;                       /* 串口对象 */
     StatusWidget *pStatusWidget;
+    LoggerSql *plogSql;
 
 private:
     //根据QSS样式获取对应颜色值
@@ -61,6 +63,8 @@ private:
                      QString &darkColorStart, QString &darkColorEnd,
                      QString &highColor);
 
+    void appendDatat2LogWidget(const QList<QVariantMap> &data);
+
 private slots:
     void initForm();
     void initStyle();
@@ -71,6 +75,8 @@ private slots:
     void leftConfigClick();
     void initSerialPort();
     void initConfig();
+    void initLogSql();
+
 
 
 private slots:
@@ -97,6 +103,8 @@ private slots:
     void on_btnRefreshPort_clicked();
 
     void on_btnOpenSerial_clicked();
+    void on_tbFilter_clicked();
+    void on_tbSelectLogFile_clicked();
 };
 
 #endif // FRMMAIN_H
