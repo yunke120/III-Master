@@ -8,6 +8,7 @@
 
 frmMain::frmMain(QWidget *parent) : QWidget(parent), ui(new Ui::frmMain)
 {
+    // 837464779 2:10
     ui->setupUi(this);
     this->initForm();
     this->initStyle();
@@ -98,6 +99,19 @@ void frmMain::appendDatat2LogWidget(const QList<QVariantMap> &data)
         ui->logTableWidget->setItem(numRows, 3, item_3);
         numRows++;
     }
+}
+
+uint8_t frmMain::checkNumber(uint8_t *data, unsigned char len, unsigned char mode)
+{
+
+    unsigned char check_sum=0,k;
+
+    for(k=0;k<len;k++)
+    {
+        check_sum=check_sum^data[k];
+    }
+    return check_sum;
+
 }
 
 void frmMain::initForm()
@@ -406,7 +420,13 @@ void frmMain::on_btnOpenVideo_clicked()
  */
 void frmMain::slotSerialReadyRead()
 {
-
+    QByteArray array = pSerial->readAll();
+//    QString str;
+//    for (int i = 0; i < array.size(); i++) {
+//        str += QString("%1 ").arg(static_cast<unsigned char>(array.at(i)), 0, 16, QChar('0'));
+//    }
+//    qDebug() << str;
+    qDebug() << QString(array);
 }
 
 void frmMain::slotConfigChange(int index)
@@ -452,7 +472,21 @@ void frmMain::slotConfigChange(int index)
  */
 void frmMain::on_btnRobotUp_clicked()
 {
+    uint8_t send_msg[12] = {0};
+    send_msg[0] = static_cast<unsigned char>(0xAA); // 帧头
+    send_msg[1] = static_cast<unsigned char>(0x01); // 预留位
+    send_msg[2] = static_cast<unsigned char>(0x01); //
+    send_msg[3] = static_cast<unsigned char>(0x00); //
+    send_msg[4] = static_cast<unsigned char>(0x00); //
+    send_msg[5] = static_cast<unsigned char>(0x00); //
+    send_msg[6] = static_cast<unsigned char>(0x00); //
+    send_msg[7] = static_cast<unsigned char>(0x00); //
+    send_msg[8] = static_cast<unsigned char>(0x00); //
+    send_msg[9] = static_cast<unsigned char>(0x00); //
+    send_msg[10] = static_cast<unsigned char>(checkNumber(send_msg, 10, 0)); //BBC校验位
+    send_msg[11] = static_cast<unsigned char>(0xDD);
 
+    pSerial->write(reinterpret_cast<char *>(send_msg), 12);
 }
 
 /**
@@ -460,7 +494,44 @@ void frmMain::on_btnRobotUp_clicked()
  */
 void frmMain::on_btnRobotDown_clicked()
 {
+//    short v1 = -272;
+//    short highByte = (v1 & 0xFF00) >> 8;  // 高8位
+//    short lowByte = v1 & 0x00FF;         // 低8位
+//    struct RobotV v;
+//    v.x.value = -150;
+//    v.y.value = 0;
+//    v.z.value = 0;
 
+//    uint8_t send_msg[11] = {0};
+//    send_msg[0] = static_cast<unsigned char>(0x7B); // 帧头
+//    send_msg[1] = static_cast<unsigned char>(0x00); // 预留位
+//    send_msg[2] = static_cast<unsigned char>(0x00); // 预留位
+//    send_msg[3] = static_cast<unsigned char>(v.x.parts.highByte); // X轴速度高8位
+//    send_msg[4] = static_cast<unsigned char>(v.x.parts.lowByte); //X轴速度低8位
+//    send_msg[5] = static_cast<unsigned char>(v.y.parts.highByte); //Y轴速度高8位
+//    send_msg[6] = static_cast<unsigned char>(v.y.parts.lowByte); //Y轴速度低8位
+//    send_msg[7] = static_cast<unsigned char>(v.z.parts.highByte); //Z轴速度高8位
+//    send_msg[8] = static_cast<unsigned char>(v.z.parts.lowByte); //Z轴速度低8位
+//    send_msg[9] = static_cast<unsigned char>(checkNumber(send_msg, 9, 0)); //BBC校验位
+//    send_msg[10] = static_cast<unsigned char>(0x7D);
+
+//    pSerial->write(reinterpret_cast<char *>(send_msg), 11);
+
+    uint8_t send_msg[12] = {0};
+    send_msg[0] = static_cast<unsigned char>(0xAA); // 帧头
+    send_msg[1] = static_cast<unsigned char>(0x01); // 预留位
+    send_msg[2] = static_cast<unsigned char>(0x02); //
+    send_msg[3] = static_cast<unsigned char>(0x00); //
+    send_msg[4] = static_cast<unsigned char>(0x00); //
+    send_msg[5] = static_cast<unsigned char>(0x00); //
+    send_msg[6] = static_cast<unsigned char>(0x00); //
+    send_msg[7] = static_cast<unsigned char>(0x00); //
+    send_msg[8] = static_cast<unsigned char>(0x00); //
+    send_msg[9] = static_cast<unsigned char>(0x00); //
+    send_msg[10] = static_cast<unsigned char>(checkNumber(send_msg, 10, 0)); //BBC校验位
+    send_msg[11] = static_cast<unsigned char>(0xDD);
+
+    pSerial->write(reinterpret_cast<char *>(send_msg), 12);
 }
 
 /**
@@ -468,7 +539,21 @@ void frmMain::on_btnRobotDown_clicked()
  */
 void frmMain::on_btnRobotLeft_clicked()
 {
+    uint8_t send_msg[12] = {0};
+    send_msg[0] = static_cast<unsigned char>(0xAA); // 帧头
+    send_msg[1] = static_cast<unsigned char>(0x01); // 预留位
+    send_msg[2] = static_cast<unsigned char>(0x08); //
+    send_msg[3] = static_cast<unsigned char>(0x00); //
+    send_msg[4] = static_cast<unsigned char>(0x00); //
+    send_msg[5] = static_cast<unsigned char>(0x00); //
+    send_msg[6] = static_cast<unsigned char>(0x00); //
+    send_msg[7] = static_cast<unsigned char>(0x00); //
+    send_msg[8] = static_cast<unsigned char>(0x00); //
+    send_msg[9] = static_cast<unsigned char>(0x00); //
+    send_msg[10] = static_cast<unsigned char>(checkNumber(send_msg, 10, 0)); //BBC校验位
+    send_msg[11] = static_cast<unsigned char>(0xDD);
 
+    pSerial->write(reinterpret_cast<char *>(send_msg), 12);
 }
 
 /**
@@ -476,7 +561,21 @@ void frmMain::on_btnRobotLeft_clicked()
  */
 void frmMain::on_btnRobotRight_clicked()
 {
+    uint8_t send_msg[12] = {0};
+    send_msg[0] = static_cast<unsigned char>(0xAA); // 帧头
+    send_msg[1] = static_cast<unsigned char>(0x01); // 预留位
+    send_msg[2] = static_cast<unsigned char>(0x07); //
+    send_msg[3] = static_cast<unsigned char>(0x00); //
+    send_msg[4] = static_cast<unsigned char>(0x00); //
+    send_msg[5] = static_cast<unsigned char>(0x00); //
+    send_msg[6] = static_cast<unsigned char>(0x00); //
+    send_msg[7] = static_cast<unsigned char>(0x00); //
+    send_msg[8] = static_cast<unsigned char>(0x00); //
+    send_msg[9] = static_cast<unsigned char>(0x00); //
+    send_msg[10] = static_cast<unsigned char>(checkNumber(send_msg, 10, 0)); //BBC校验位
+    send_msg[11] = static_cast<unsigned char>(0xDD);
 
+    pSerial->write(reinterpret_cast<char *>(send_msg), 12);
 }
 
 /**
@@ -484,7 +583,21 @@ void frmMain::on_btnRobotRight_clicked()
  */
 void frmMain::on_btnRobotStop_clicked()
 {
+    uint8_t send_msg[12] = {0};
+    send_msg[0] = static_cast<unsigned char>(0xAA); // 帧头
+    send_msg[1] = static_cast<unsigned char>(0x01); // 预留位
+    send_msg[2] = static_cast<unsigned char>(0x00); //
+    send_msg[3] = static_cast<unsigned char>(0x00); //
+    send_msg[4] = static_cast<unsigned char>(0x00); //
+    send_msg[5] = static_cast<unsigned char>(0x00); //
+    send_msg[6] = static_cast<unsigned char>(0x00); //
+    send_msg[7] = static_cast<unsigned char>(0x00); //
+    send_msg[8] = static_cast<unsigned char>(0x00); //
+    send_msg[9] = static_cast<unsigned char>(0x00); //
+    send_msg[10] = static_cast<unsigned char>(checkNumber(send_msg, 10, 0)); //BBC校验位
+    send_msg[11] = static_cast<unsigned char>(0xDD);
 
+    pSerial->write(reinterpret_cast<char *>(send_msg), 12);
 }
 
 void frmMain::on_btnSaveConfig_clicked()

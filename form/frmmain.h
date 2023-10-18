@@ -17,6 +17,23 @@
 #define CONFIG_FILEPATH  "./config.ini"
 
 
+struct Int16Parts {
+    uint8_t lowByte;
+    uint8_t highByte;
+};
+
+// 定义一个联合体，用于存储16位整数和结构
+union Int16Union {
+    short value;
+    struct Int16Parts parts;
+};
+
+struct RobotV{
+    union Int16Union x;
+    union Int16Union y;
+    union Int16Union z;
+};
+
 class QAbstractButton;
 
 namespace Ui {
@@ -64,6 +81,7 @@ private:
                      QString &highColor);
 
     void appendDatat2LogWidget(const QList<QVariantMap> &data);
+    uint8_t checkNumber(uint8_t *data, unsigned char len, unsigned char mode);
 
 private slots:
     void initForm();
